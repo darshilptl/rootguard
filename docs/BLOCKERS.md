@@ -1,39 +1,9 @@
-# Status
-| Phase | Module doc status | Gate result | Commit | Date |
+# Blockers
+| date | item | what was checked | evidence | result |
 |---|---|---|---|---|
-| 0-12 | not started | | | |
-Rules: update only after running the gate. Record real output summaries, never claims.
-Hashes: seed_100.jsonl = (pending), families.json = (pending)
-
-## 2026-10-13 — Phase 0 (scaffold) findings
-
-- `uv` 0.13.0 (`/home/darshil/.local/bin/uv`) installed by the author during
-  Phase 0. Gate items 1-2 run verbatim via `uv run`. No blocker.
-- AppArmor: privileged operations (`aa-status` full output, loading profiles)
-  need root, which is unavailable in this environment (`sudo -n aa-status`
-  requires interactive auth; unprivileged `aa-status` read denied). Enabled
-  state confirmed by equivalent evidence: `aa-enabled` = `Yes`,
-  `/sys/module/apparmor/parameters/enabled` = `Y`, `apparmor 5.0.2` userspace
-  installed. Per author decision, Phase 0 gate wording changed to accept this
-  evidence; privileged operations to be planned in the Phase 10 module doc.
-  No sudo attempt was made and none will be.
-- pyseccomp: `uv run python -c "import pyseccomp"` fails with
-  `ModuleNotFoundError` (2026-10-13). Read-only lookups, nothing installed:
-  `apt-cache search seccomp` advertises `python3-seccomp` (universe, "high
-  level interface to Linux seccomp filter (Python 3 bindings)") — its import
-  name is unverified (direct .deb fetch from the local mirror returned
-  `403 Forbidden`, no install attempted, no workaround tried);
-  `uv pip install --dry-run pyseccomp` resolves PyPI `pyseccomp==0.1.2` on
-  Python 3.14.4. Conclusion: the Phase 0 gate failure path applies (recorded
-  here, not faked); the binding choice is deferred to the Phase 10 module doc.
-- Python 3.14 wheel availability (dry-run only, nothing installed, nothing
-  added to `pyproject.toml`):
-  `uv pip install --dry-run faiss-cpu lightgbm scikit-learn numpy pandas torch --index https://download.pytorch.org/whl/cpu`
-  resolved faiss-cpu==1.15.1, lightgbm==4.7.0, numpy==2.4.6, pandas==3.0.6,
-  scikit-learn==1.9.1, torch==2.14.1+cpu. All six resolve for Python 3.14.4;
-  no missing wheel, no Python switch needed. Torch CPU wheels for cp314
-  confirmed on the PyTorch CPU index (e.g. torch-2.10.0+cpu-cp314-
-  manylinux_2_28_x86_64.whl; resolver picked 2.14.1+cpu).
-- MiniLM gate check downloads CUDA torch wheels (~GBs) on the default index
-  and is slow; disk is fine (140G avail), network to huggingface.co works.
-  CPU index approved for torch (see module doc D2) for Phase 5+.
+| 2026-10-13 | uv availability (Phase 0) | `uv --version` | `uv 0.13.0 (x86_64-unknown-linux-gnu)` at `/home/darshil/.local/bin/uv`, installed by the author during Phase 0 | No blocker. Gate items 1-2 ran verbatim via `uv run` |
+| 2026-10-13 | AppArmor privileged operations (Phase 0) | `sudo -n aa-status`; unprivileged `aa-status`; `aa-enabled`; `/sys/module/apparmor/parameters/enabled`; `dpkg -l` | sudo needs interactive auth; unprivileged read denied; `aa-enabled` = `Yes`, sysfs = `Y`, `apparmor 5.0.2-0ubuntu1~26.04.1` installed | Blocker for privileged ops only. Planned in the Phase 10 module doc. No sudo attempt was made and none will be |
+| 2026-10-13 | pyseccomp import (Phase 0) | `uv run python -c "import pyseccomp"`; `apt-cache search seccomp`; `uv pip install --dry-run pyseccomp`; direct .deb fetch | `ModuleNotFoundError`; apt advertises `python3-seccomp` (import name unverified, .deb fetch returned 403 from local mirror); PyPI `pyseccomp==0.1.2` resolves on Python 3.14.4 | Gate failure path applies (recorded, not faked). Binding choice deferred to the Phase 10 module doc |
+| 2026-10-13 | Python 3.14 wheels (Phase 0) | `uv pip install --dry-run faiss-cpu lightgbm scikit-learn numpy pandas torch --index https://download.pytorch.org/whl/cpu` | Resolved faiss-cpu==1.15.1, lightgbm==4.7.0, numpy==2.4.6, pandas==3.0.6, scikit-learn==1.9.1, torch==2.14.1+cpu | No blocker. Nothing installed, nothing added to `pyproject.toml` |
+| 2026-10-13 | MiniLM download weight (Phase 0) | default-index `uv run --with sentence-transformers`; `df -h`; `curl -sI https://huggingface.co` | Multi-GB CUDA torch wheels; 140G disk free; huggingface.co reachable; gate check passed (embed shape (1, 384)) | No blocker. CPU index approved for torch (module doc D2) for Phase 5+ |
+| 2026-10-13 | Python interpreter + wheel re-check (Phase 1) | `uv run python --version`; `.venv` path inspection; `uv pip install --dry-run --python 3.14 faiss-cpu lightgbm scikit-learn numpy pandas` and `--default-index https://download.pytorch.org/whl/cpu torch` | uv discovery had created `.venv` on Python 3.11.16 while system python3 is 3.14.4, so the Phase 0 dry-run evidence above was recorded under the wrong interpreter. Pinned 3.14 via `.python-version` (`uv python pin 3.14`), re-synced. Re-check under 3.14.4: faiss-cpu==1.15.1, lightgbm==4.7.0, numpy==2.5.4 (was 2.4.6 under 3.11), pandas==3.0.6, scikit-learn==1.9.1, torch==2.14.1+cpu | Record corrected (numpy version above superseded). All six resolve; no blocker. `.python-version` flagged for retro-approval in the Phase 1 report |

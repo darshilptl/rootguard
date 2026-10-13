@@ -168,3 +168,8 @@ ambiguous, a new dependency is needed, or anything touches heldout or frozen see
 - Commit only after the gate passes. Small, logical commits. Never commit a broken state.
 - PRs into main, squash merge. The user merges and tags (`v0.N.0` after phase N). Agents never merge.
 - Delete the branch after merge.
+
+## 15. Approved exceptions (appended sections only; existing content above is never edited)
+- 2026-10-13 (Phase 1, docs/modules/01-db-schema.md Q4): root-level
+  `alembic.ini` is permitted so the documented command `alembic upgrade head`
+  works. All migration scripts stay under `src/rootguard/db/migrations/`.
