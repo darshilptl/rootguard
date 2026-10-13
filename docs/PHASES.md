@@ -8,7 +8,7 @@ Gate:
 - [ ] `uv run pytest -q` smoke test passes
 - [ ] `uv run rootguard --version` works
 - [ ] `ollama list` shows qwen3:4b
-- [ ] `aa-status` shows AppArmor enabled
+- [ ] AppArmor enabled (aa-enabled, or /sys/module/apparmor/parameters/enabled = Y)
 - [ ] MiniLM loads from ./models/hf and embeds a sentence
 - [ ] `import pyseccomp` works, or the failure is written to docs/BLOCKERS.md (not faked)
 - [ ] `git status` clean after commit; .gitignore covers data/external, models/hf, *.db, model.pkl
