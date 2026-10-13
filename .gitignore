@@ -1,0 +1,10 @@
+data/external/
+models/hf/
+*.db
+*.db-wal
+*.db-shm
+model.pkl
+__pycache__/
+.venv/
+.pytest_cache/
+.env
